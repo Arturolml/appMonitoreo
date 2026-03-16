@@ -24,8 +24,8 @@ WORKDIR /app
 
 # Install ONLY production dependencies
 COPY package*.json ./
-# We need prisma to run generate
-RUN npm install --omit=dev && npm install prisma --save-dev
+# We need prisma, ts-node and typescript to run the seed
+RUN npm install --omit=dev && npm install prisma ts-node typescript --save-dev
 
 # Copy build artifacts and prisma from build stage
 COPY --from=build /app/dist ./dist
@@ -37,5 +37,5 @@ RUN npx prisma generate
 
 EXPOSE 3009
 
-# Entry point script to run migrations and then the application.
-CMD ["sh", "-c", "npx prisma migrate deploy && node dist/main.js"]
+# Entry point script to run migrations, seed data, and then the application.
+CMD ["sh", "-c", "npx prisma migrate deploy && npx prisma db seed && node dist/main.js"]
