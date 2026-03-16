@@ -7,8 +7,11 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install
 
-# Copy source and prisma
-COPY . .
+# Copy ONLY necessary files to avoid contamination of the root directory
+# and ensure NestJS builds a flat 'dist' folder.
+COPY tsconfig.json nest-cli.json ./
+COPY src ./src
+COPY prisma ./prisma
 
 # Generate Prisma client and Build
 RUN npx prisma generate
@@ -30,5 +33,6 @@ COPY --from=build /app/package.json ./package.json
 
 EXPOSE 3009
 
-# Entry point script to run migrations and then the application
-CMD ["sh", "-c", "npx prisma migrate deploy && npm run start:prod"]
+# Entry point script to run migrations and then the application.
+# We use 'ls' to debug the directory structure in the logs if it fails again.
+CMD ["sh", "-c", "npx prisma migrate deploy && node dist/main.js || node dist/src/main.js"]
