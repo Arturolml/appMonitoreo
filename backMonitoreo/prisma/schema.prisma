@@ -1,0 +1,182 @@
+// prisma/schema.prisma
+
+datasource db {
+  provider = "postgresql"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// --- ENUMS ---
+
+enum Rol {
+  ADMIN      // Da de alta a médicos y enfermeros
+  MEDICO     // Crea pacientes y evaluaciones
+  ENFERMERO  // Monitorea y atiende alertas
+  PACIENTE   // Usuario de la ortesis
+}
+
+enum EstadoAlerta {
+  PENDIENTE  // Alerta disparada sin revisar
+  REVISADA   // Vista por personal médico
+  RESUELTA   // Caso cerrado con acción tomada
+}
+
+// --- MODELOS DE USUARIO ---
+
+model Usuario {
+  id                 String    @id @default(cuid())
+  email              String    @unique
+  password           String    
+  
+  // Nombre Desglosado
+  nombre             String
+  apellidoPaterno    String
+  apellidoMaterno    String?   // Opcional
+  
+  rol                Rol       @default(PACIENTE)
+  activo             Boolean   @default(true)
+  fechaCreacion      DateTime  @default(now())
+  fechaActualizacion DateTime  @updatedAt
+
+  // Si el rol es PACIENTE, tendrá este perfil extendido
+  perfilPaciente     Paciente?
+
+  // Médicos/Enfermeros: Relación con pacientes que gestionan
+  pacientesAsignados Paciente[] @relation("MedicoAPaciente")
+}
+
+// --- MODELO PACIENTE (Perfil Clínico) ---
+
+model Paciente {
+  id                 String    @id @default(cuid())
+  
+  // Vinculación con el usuario (Autenticación)
+  usuario            Usuario   @relation(fields: [usuarioId], references: [id])
+  usuarioId          String    @unique
+
+  // Responsable médico (Médico que lo dio de alta)
+  miMedico           Usuario?    @relation("MedicoAPaciente", fields: [miMedicoId], references: [id])
+  miMedicoId         String?
+
+  // Datos de Identificación (Mantenidos en el perfil clínico)
+  nombre             String
+  apellidoPaterno    String
+  apellidoMaterno    String?
+  curp               String?   @unique 
+
+  // Datos Clínicos
+  fechaNacimiento    DateTime?
+  tipoOrtesis        String?
+  miembroAfectado    String?
+  tipoSanguineo      String?
+  alergias           String?   @db.Text
+  antecedentes       String?   @db.Text
+
+  // --- RELACIONES DE TELEMETRÍA Y SEGUIMIENTO ---
+  dispositivos       Dispositivo[]    
+  lecturasSalud      LecturaSalud[]   
+  evaluaciones       Evaluacion[]     
+  umbrales           UmbralSalud?     
+  alertas            Alerta[]         
+
+  @@index([miMedicoId])
+}
+
+// --- HARDWARE (ESP32) ---
+
+model Dispositivo {
+  id                    String   @id @default(cuid())
+  dispositivoId         String   @unique 
+  modelo                String   @default("ESP32-Ortesis-V1")
+  ubicacion             String?  
+  nivelBateria          Int?     
+  estaActivo            Boolean  @default(true)
+  ultimaSincronizacion  DateTime @updatedAt
+  
+  paciente              Paciente @relation(fields: [pacienteId], references: [id])
+  pacienteId            String
+}
+
+// --- TELEMETRÍA Y ALERTAS ---
+
+model LecturaSalud {
+  id                  BigInt   @id @default(autoincrement())
+  oxigenoSangre       Float    
+  frecuenciaCardiaca  Int      
+  temperaturaCorporal Float    
+  humedadAmbiental    Float    
+  presionSistolica    Float?   // Presión Arterial (Sistólica)
+  presionDiastolica   Float?   // Presión Arterial (Diastólica)
+  fechaRegistro       DateTime @default(now())
+  
+  esAnomalia          Boolean  @default(false)
+
+  paciente            Paciente @relation(fields: [pacienteId], references: [id])
+  pacienteId          String
+
+  @@index([pacienteId, fechaRegistro(sort: Desc)])
+}
+
+model UmbralSalud {
+  id                        String   @id @default(cuid())
+  oxigenoMinimo             Float    @default(90.0)
+  frecuenciaCardiacaMaxima  Int      @default(100)
+  frecuenciaCardiacaMinima  Int      @default(50)
+  temperaturaCorporalMaxima Float    @default(37.8)
+  presionSistolicaMaxima    Float    @default(140.0)
+  presionDiastolicaMaxima   Float    @default(90.0)
+  activo                    Boolean  @default(true)
+  
+  paciente                  Paciente @relation(fields: [pacienteId], references: [id])
+  pacienteId                String   @unique
+}
+
+model Alerta {
+  id              String       @id @default(cuid())
+  tipo            String       
+  descripcion     String       
+  estado          EstadoAlerta @default(PENDIENTE)
+  activo          Boolean      @default(true)
+  fechaCreacion   DateTime     @default(now())
+  
+  notas           String?      @db.Text 
+  resueltaPor     String?      
+
+  paciente        Paciente     @relation(fields: [pacienteId], references: [id])
+  pacienteId      String
+}
+
+// --- HISTORIAL CLÍNICO ---
+
+model Evaluacion {
+  id                 String   @id @default(cuid())
+  activo             Boolean  @default(true)
+  fechaCreacion      DateTime @default(now())
+  fechaActualizacion DateTime @updatedAt
+  
+  diagnostico        String   @db.Text
+  observaciones      String?  @db.Text
+  indicaciones       String?  @db.Text
+  medicamentos       String?  @db.Text 
+
+  // --- DATOS ESTRUCTURADOS PARA IA ---
+  puntajeBarthel     Int?     
+  puntajeTinetti      Int?     
+  puntajeNorton      Int?
+  puntajePfeiffer    Int?
+  nivelDolor         Int?
+  puntajeLawton      Int?
+  puntajeMNA         Int?
+  datosEscalas       Json?    // Guarda el objeto crudo de respuestas
+  
+  nivelEstres        Float?   // Predicción de IA
+  nivelAnsiedad      Float?   // Predicción de IA
+  
+  paciente           Paciente @relation(fields: [pacienteId], references: [id])
+  pacienteId         String
+  
+  evaluadorId        String   
+  nombreEvaluador    String   
+}
