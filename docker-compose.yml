@@ -3,6 +3,7 @@ services:
   db:
     image: postgres:15-alpine
     container_name: ivan-db
+    restart: always
     environment:
       POSTGRES_USER: monitoreo
       POSTGRES_PASSWORD: mFwXv4dH7k5euq
@@ -22,6 +23,7 @@ services:
       context: ./backMonitoreo
       dockerfile: Dockerfile
     container_name: ivan-backend
+    restart: always
     ports:
       - "3009:3009"
     environment:
@@ -39,6 +41,7 @@ services:
       context: ./web_admin
       dockerfile: Dockerfile
     container_name: ivan-frontend
+    restart: always
     ports:
       - "8083:80"
     depends_on:
