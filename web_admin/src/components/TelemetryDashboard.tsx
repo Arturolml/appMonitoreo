@@ -121,7 +121,7 @@ const TelemetryDashboard: React.FC<TelemetryDashboardProps> = ({ patientId }) =>
                             <LineChart data={chartData}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(0,0,0,0.05)" />
                                 <XAxis dataKey="time" fontSize={10} tickMargin={10} />
-                                <YAxis domain={yDomain} fontSize={10} />
+                                <YAxis domain={yDomain as any} fontSize={10} />
                                 <Tooltip />
                                 <Line type="monotone" dataKey="presionSistolica" name="Sistólica" stroke="#6366f1" strokeWidth={3} dot={false} animationDuration={500} />
                                 <Line type="monotone" dataKey="presionDiastolica" name="Diastólica" stroke="#a855f7" strokeWidth={3} dot={false} animationDuration={500} />
@@ -136,7 +136,7 @@ const TelemetryDashboard: React.FC<TelemetryDashboardProps> = ({ patientId }) =>
                                 </defs>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(0,0,0,0.05)" />
                                 <XAxis dataKey="time" fontSize={10} tickMargin={10} />
-                                <YAxis domain={yDomain} fontSize={10} />
+                                <YAxis domain={yDomain as any} fontSize={10} />
                                 <Tooltip />
                                 <Area type="monotone" dataKey={dataKey} stroke={color} strokeWidth={3} fillOpacity={1} fill="url(#colorVal)" animationDuration={500} />
                             </AreaChart>

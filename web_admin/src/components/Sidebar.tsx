@@ -1,11 +1,10 @@
+import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
     LayoutDashboard,
     Users,
-    UserPlus,
     LogOut,
-    Activity,
-    Settings
+    Activity
 } from 'lucide-react';
 import { AuthService } from '../services/api';
 
@@ -14,7 +13,7 @@ const Sidebar = () => {
     const location = useLocation();
     const user = AuthService.getCurrentUser();
 
-    let menuItems: { name: string; icon: JSX.Element; path: string; }[] = [];
+    let menuItems: { name: string; icon: React.ReactElement; path: string; }[] = [];
 
     if (user?.rol === 'ADMIN') {
         menuItems = [
