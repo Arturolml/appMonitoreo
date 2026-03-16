@@ -20,7 +20,8 @@ services:
 
   backend:
     build:
-      context: ./backMonitoreo
+      context: .
+      dockerfile: ./backMonitoreo/Dockerfile
     container_name: ivan-backend
     restart: always
     ports:
@@ -37,7 +38,8 @@ services:
 
   frontend:
     build:
-      context: ./web_admin
+      context: .
+      dockerfile: ./web_admin/Dockerfile
     container_name: ivan-frontend
     restart: always
     ports:
