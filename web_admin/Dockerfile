@@ -22,13 +22,9 @@ RUN npm install -g serve
 # Copy build artifacts from previous stage
 COPY --from=build /app/dist ./dist
 
-# Create subfolder structure to match the path /appmonitoreo
-# This ensures that 'serve' delivers the files correctly when accessed via the subpath
-RUN mkdir -p /app/serve_dir/appmonitoreo && \
-    cp -r /app/dist/* /app/serve_dir/appmonitoreo/
-
 EXPOSE 80
 
-# Serve from the parent directory so /appmonitoreo route works
+# Serve directly from the 'dist' folder.
+# The external Nginx proxy will handle the /appmonitoreo path routing.
 # -s handles SPA routing
-CMD ["serve", "-s", "serve_dir", "-l", "80"]
+CMD ["serve", "-s", "dist", "-l", "80"]
