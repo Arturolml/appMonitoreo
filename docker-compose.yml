@@ -1,0 +1,48 @@
+# Master Docker Compose for IvanProyecto
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: ivan-db
+    environment:
+      POSTGRES_USER: monitoreo
+      POSTGRES_PASSWORD: mFwXv4dH7k5euq
+      POSTGRES_DB: monitoreodb
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U monitoreo -d monitoreodb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backMonitoreo
+      dockerfile: Dockerfile
+    container_name: ivan-backend
+    ports:
+      - "3009:3009"
+    environment:
+      - DATABASE_URL=postgresql://monitoreo:mFwXv4dH7k5euq@db:5432/monitoreodb?schema=public
+      - JWT_SECRET=una_clave_secreta_muy_larga_y_segura_12345
+      - PORT=3009
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./backMonitoreo/src:/app/src # Optional: for dev hot-reload if using dev mode
+
+  frontend:
+    build:
+      context: ./web_admin
+      dockerfile: Dockerfile
+    container_name: ivan-frontend
+    ports:
+      - "8083:80"
+    depends_on:
+      - backend
+
+volumes:
+  pgdata:

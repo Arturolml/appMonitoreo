@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:3000'; // Update with your actual backend URL
+const API_URL = 'https://liaaproyectos.uaz.edu.mx/apimonitoreo'; // Domain and subpath
 
 const api = axios.create({
     baseURL: API_URL,
