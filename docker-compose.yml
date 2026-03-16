@@ -13,7 +13,7 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U monitoreo -d monitoreodb"]
+      test: [ "CMD-SHELL", "pg_isready -U monitoreo -d monitoreodb" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -39,7 +39,7 @@ services:
     container_name: ivan-frontend
     restart: always
     ports:
-      - "8083:80"
+      - "8084:80"
     depends_on:
       - backend
 
