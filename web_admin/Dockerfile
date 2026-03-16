@@ -12,14 +12,23 @@ COPY . .
 RUN npm run build
 
 # Production stage
-FROM nginx:stable-alpine
+FROM node:22-alpine
 
-# Copy custom nginx config
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+WORKDIR /app
 
-# Copy build artifacts to nginx
-COPY --from=build /app/dist /usr/share/nginx/html
+# Install a simple static server
+RUN npm install -g serve
+
+# Copy build artifacts from previous stage
+COPY --from=build /app/dist ./dist
+
+# Create subfolder structure to match the path /appmonitoreo
+# This ensures that 'serve' delivers the files correctly when accessed via the subpath
+RUN mkdir -p /app/serve_dir/appmonitoreo && \
+    cp -r /app/dist/* /app/serve_dir/appmonitoreo/
 
 EXPOSE 80
 
-CMD ["nginx", "-g", "daemon off;"]
+# Serve from the parent directory so /appmonitoreo route works
+# -s handles SPA routing
+CMD ["serve", "-s", "serve_dir", "-l", "80"]
