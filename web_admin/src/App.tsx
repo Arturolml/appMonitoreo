@@ -32,7 +32,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
 
 const App = () => {
   return (
-    <Router>
+    <Router basename="/appmonitoreo">
       <Routes>
         <Route path="/" element={<Login />} />
 
