@@ -21,7 +21,6 @@ services:
   backend:
     build:
       context: ./backMonitoreo
-      dockerfile: Dockerfile
     container_name: ivan-backend
     restart: always
     ports:
@@ -34,12 +33,11 @@ services:
       db:
         condition: service_healthy
     volumes:
-      - ./backMonitoreo/src:/app/src # Optional: for dev hot-reload if using dev mode
+      - ./backMonitoreo/src:/app/src
 
   frontend:
     build:
       context: ./web_admin
-      dockerfile: Dockerfile
     container_name: ivan-frontend
     restart: always
     ports:
